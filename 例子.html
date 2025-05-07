@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>天一报表</title>
+    
+    <link rel="stylesheet" type="text/css" href="http://dx.yuanding.tech/css/eleent-ui.css">
+   <link rel="stylesheet" type="text/css" href="http://unpkg.com/element-ui@2.13.2/lib/theme-chalk/index.css">
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/jquery.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/vue.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/axios.min.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/element-ui.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/MyAxios2.js"></script>
+    <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+ 
+</head>
+
+<body>
+<div id="app">
+
+{{dataList}}<br>
+-------------------<br>
+{{rowsList}}
+</div>
+
+<script>
+   var that;
+ 
+   onserver='http://222.174.223.138:3301/client/' //UFTData708848_000027帐套
+	new Vue({
+		el: "#app",
+		data() {
+			return {
+				dataList:[],
+				rowsList:[]
+			}
+		},
+		methods: {
+		
+			dataLoad()
+			{
+				var cx={}
+				cx.sql="SELECT   TOP (100) PERCENT dbo.AA_InventoryEntity.specification AS 规格, dbo.AA_InventoryEntity.code AS 编码, dbo.AA_Unit.name AS 计量单位, dbo.AA_InventoryEntity.name AS 名称, dbo.AA_InventoryClass.name AS 分类, dbo.AA_Inventory_Cost.latestCost AS 最新成本, dbo.AA_Inventory_Cost.avagCost AS 平均成本, dbo.V_ST_CurrentStockWithZero.BaseQuantity AS 现存量, dbo.V_ST_CurrentStockWithZero.CanuseBaseQuantity AS 可用量 FROM      dbo.AA_InventoryEntity INNER JOIN dbo.AA_Unit ON dbo.AA_InventoryEntity.idunit = dbo.AA_Unit.id INNER JOIN dbo.AA_InventoryClass ON dbo.AA_InventoryEntity.idinventoryclass = dbo.AA_InventoryClass.id INNER JOIN dbo.V_ST_CurrentStockWithZero ON dbo.AA_InventoryEntity.id = dbo.V_ST_CurrentStockWithZero.idinventory INNER JOIN dbo.AA_Inventory_Cost ON dbo.AA_InventoryEntity.id = dbo.AA_Inventory_Cost.idInventory"
+				post(onserver+'sql/getList',cx)
+				.then(function (response) {
+					console.log(cx.sql,response)
+					var list=response.data
+					that.dataList=list
+				})
+			},
+			//分页
+			rowsLoad()
+			{
+				var cx={}
+				cx.pagesize=5
+				cx.pageno=1
+				cx.sql="SELECT   TOP (100) PERCENT dbo.AA_InventoryEntity.specification AS 规格, dbo.AA_InventoryEntity.code AS 编码, dbo.AA_Unit.name AS 计量单位, dbo.AA_InventoryEntity.name AS 名称, dbo.AA_InventoryClass.name AS 分类, dbo.AA_Inventory_Cost.latestCost AS 最新成本, dbo.AA_Inventory_Cost.avagCost AS 平均成本, dbo.V_ST_CurrentStockWithZero.BaseQuantity AS 现存量, dbo.V_ST_CurrentStockWithZero.CanuseBaseQuantity AS 可用量 FROM      dbo.AA_InventoryEntity INNER JOIN dbo.AA_Unit ON dbo.AA_InventoryEntity.idunit = dbo.AA_Unit.id INNER JOIN dbo.AA_InventoryClass ON dbo.AA_InventoryEntity.idinventoryclass = dbo.AA_InventoryClass.id INNER JOIN dbo.V_ST_CurrentStockWithZero ON dbo.AA_InventoryEntity.id = dbo.V_ST_CurrentStockWithZero.idinventory INNER JOIN dbo.AA_Inventory_Cost ON dbo.AA_InventoryEntity.id = dbo.AA_Inventory_Cost.idInventory"
+				post(onserver+'sql/getRows',cx)
+				.then(function (response) {
+					var list=response.data.rows
+					var total=response.data.cnt
+					that.rowsList=list
+				})
+			},
+
+		},
+		mounted: function () {
+			that = this;
+			that.dataLoad()
+			that.rowsLoad()
+		}
+	});
+</script>
+</body>
+</html>

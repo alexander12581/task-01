@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>天一报表</title>
+    
+    <link rel="stylesheet" type="text/css" href="http://dx.yuanding.tech/css/eleent-ui.css">
+   <link rel="stylesheet" type="text/css" href="http://unpkg.com/element-ui@2.13.2/lib/theme-chalk/index.css">
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/jquery.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/vue.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/axios.min.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/element-ui.js"></script>
+    <script type="text/javascript" src="http://dx.yuanding.tech/js/MyAxios2.js"></script>
+    <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+ 
+</head>
+
+<body>
+<div id="app">
+
+{{dataList}}<br>
+{{res}}
+</div>
+
+<script>
+   var that;
+ 
+
+	new Vue({
+		el: "#app",
+		data() {
+			return {
+				dataList:[],
+				rowsList:[],
+				res:{}
+			}
+		},
+		methods: {
+			//读取 存货档案
+			dataLoad()
+			{
+
+				var cx={param:{}}
+				var obj = {
+					method: "inventory/Query",
+					tpid:1240358520377486,
+					cs: cx
+				}
+				post("http://cjt.yuanding.tech/tp/tplus/read", obj)
+				.then(function(response){
+					that.dataList=response.data
+				})
+
+			},
+			//上传 创建仓库
+			upload()
+			{
+
+				var cx={"dto":{WarehouseType:{Code:"01"},Code: "003",Name: "电子设备库"}}
+				var obj = {
+					method: "warehouse/Create",
+					tpid:1240358520377486,
+					cs: cx
+				}
+				post("http://cjt.yuanding.tech/tp/tplus/execute", obj)
+				.then(function(response){
+					console.log(69,obj)
+					that.res=response.data
+				})
+
+			},
+			
+
+		},
+		mounted: function () {
+			that = this;
+			that.dataLoad()
+			//that.upload()
+		
+		}
+	});
+</script>
+</body>
+</html>
