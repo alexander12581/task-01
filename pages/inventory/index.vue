@@ -3,22 +3,16 @@
     <!-- 搜索区域 -->
     <view class="search-area">
       <uni-forms ref="searchForm" :model="searchForm">
-        <uni-row :gutter="10">
-          <uni-col :span="8">
+		<uni-row>  
             <uni-forms-item label="存货编码">
               <uni-easyinput v-model="searchForm.code" placeholder="请输入存货编码" />
             </uni-forms-item>
-          </uni-col>
-          <uni-col :span="8">
             <uni-forms-item label="存货名称">
               <uni-easyinput v-model="searchForm.name" placeholder="请输入存货名称" />
             </uni-forms-item>
-          </uni-col>
-          <uni-col :span="8">
             <uni-forms-item label="助记码">
               <uni-easyinput v-model="searchForm.mnemonicCode" placeholder="请输入助记码" />
             </uni-forms-item>
-          </uni-col>
         </uni-row>
         <uni-row class="button-group">
           <button type="primary" @click="handleSearch">查询</button>
@@ -76,6 +70,7 @@ export default {
       },
       loading: false,
       tableData: [],
+      allData: [], // 存储所有数据
       total: 0,
       current: 1,
       pageSize: 10
@@ -121,19 +116,17 @@ export default {
       this.loading = true
       try {
         const params = {
-          sql: this.buildQuerySQL(),
-          pagesize: this.pageSize,
-          pageno: this.current
+          sql: this.buildQuerySQL()
         }
         
         const response = await uni.request({
-          url: API_BASE_URL + 'sql/getRows',
+          url: API_BASE_URL + 'sql/getList',
           method: 'POST',
           data: params
         })
         
-        if (response.data.success) {
-          this.tableData = response.data.rows.map(item => ({
+        if (response.data) {
+          this.allData = response.data.map(item => ({
             code: item.编码,
             name: item.名称,
             specification: item.规格,
@@ -142,7 +135,8 @@ export default {
             currentStock: item.现存量,
             availableStock: item.可用量
           }))
-          this.total = response.data.cnt
+          this.total = this.allData.length
+          this.updateTableData()
         }
       } catch (error) {
         uni.showToast({
@@ -152,6 +146,13 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+
+    // 更新表格数据（手动分页）
+    updateTableData() {
+      const start = (this.current - 1) * this.pageSize
+      const end = start + this.pageSize
+      this.tableData = this.allData.slice(start, end)
     },
     
     // 处理查询
@@ -173,7 +174,7 @@ export default {
     // 处理分页变化
     handlePageChange(e) {
       this.current = e.current
-      this.loadData()
+      this.updateTableData()
     }
   }
 }
@@ -182,15 +183,14 @@ export default {
 <style lang="scss">
 .inventory-page {
   padding: 20rpx;
-  
+  overflow-y: auto;
   .search-area {
     background-color: #fff;
     padding: 20rpx;
     border-radius: 8rpx;
-    margin-bottom: 20rpx;
+    // margin-bottom: 20rpx;
     
     .button-group {
-      margin-top: 20rpx;
       display: flex;
       justify-content: center;
       gap: 20rpx;
@@ -199,7 +199,6 @@ export default {
   
   .table-area {
     background-color: #fff;
-    padding: 20rpx;
     border-radius: 8rpx;
     
     .pagination {
